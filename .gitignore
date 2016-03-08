@@ -1,3 +1,11 @@
+mancala
+*.o
+.deps
+.autotools
+.project
+.cproject
+.settings
+
 # http://www.gnu.org/software/automake
 
 Makefile.in
@@ -16,3 +24,8 @@ Makefile.in
 /install-sh
 /missing
 /stamp-h1
+/config.guess
+/config.log
+/config.status
+/config.sub
+/Makefile
