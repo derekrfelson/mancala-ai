@@ -19,18 +19,19 @@
 #include "HoleIterator.h"
 #include "State.h"
 #include "Settings.h"
+#include "Move.h"
 #include <cassert>
 
-HoleIterator::HoleIterator(uint8_t moveNumber, State& state, bool clockwise)
-: currentHole{moveNumber},
+HoleIterator::HoleIterator(const Move& move, State& state)
+: currentHole{move.holeNumber},
   state{state},
-  clockwise{clockwise},
+  clockwise{move.clockwise},
   otherMancala1{0},
   otherMancala2{0},
   myMancala1{0},
   myMancala2{0}
 {
-	assert(moveNumber > 0 && moveNumber <= globalState().numHoles);
+	assert(move.holeNumber > 0 && move.holeNumber <= globalState().numHoles);
 	if (!state.getIsP1Turn())
 	{
 		// Suppose there are 4 holes. Then clockwise hole order goes:
@@ -51,7 +52,7 @@ HoleIterator::HoleIterator(uint8_t moveNumber, State& state, bool clockwise)
 		//
 		// When you do the math, the transformation from move number
 		// to bottom hole is:
-		currentHole += 3 + 2 * (globalState().numHoles - moveNumber);
+		currentHole += 3 + 2 * (globalState().numHoles - move.holeNumber);
 	}
 
 	if (state.getIsP1Turn())

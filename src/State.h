@@ -12,7 +12,8 @@
 #include <vector>
 #include <iosfwd>
 
-struct State {
+struct State
+{
 public: /* Member functions */
 	State(std::vector<uint8_t> p1Holes,
 			std::vector<uint8_t> p2Holes,

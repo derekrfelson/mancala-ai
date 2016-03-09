@@ -10,10 +10,12 @@
 
 #include <cstdint>
 class State;
+class Move;
 
-class HoleIterator {
+class HoleIterator
+{
 public:
-	HoleIterator(uint8_t moveNumber, State& state, bool clockwise);
+	HoleIterator(const Move& move, State& state);
 	void next();
 	uint8_t& operator*();
 private:

@@ -6,6 +6,7 @@
 #include <vector>
 #include "Settings.h"
 #include "State.h"
+#include "Move.h"
 #include "HoleIterator.h"
 using namespace std;
 
@@ -124,7 +125,7 @@ State nextHumanMove(const State& currentState)
 
 	// Apply the move
 	auto newState = State{currentState};
-	auto iter = HoleIterator{move, newState, clockwise};
+	auto iter = HoleIterator{Move{move, clockwise}, newState};
 	auto stonesInHand = *iter;
 	*iter = 0;
 	while (stonesInHand > 0)
