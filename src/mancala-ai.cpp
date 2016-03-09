@@ -12,6 +12,7 @@ using namespace std;
 
 void usage();
 State nextHumanMove(const State& currentState);
+void applyMove(State& state, const Move& move);
 
 void usage()
 {
@@ -75,8 +76,8 @@ int main(int argc, char** argv)
 // Note: this uses the currentState to determine whose move it is
 State nextHumanMove(const State& currentState)
 {
+	// Show the current state so the user knows what's going on
 	currentState.prettyPrint(cout);
-
 	if (currentState.getIsP1Turn())
 	{
 		cout << "You are Player 1 (top)" << endl;
@@ -86,49 +87,71 @@ State nextHumanMove(const State& currentState)
 		cout << "You are Player 2 (bottom)" << endl;
 	}
 
-	// Have the human enter the next move number and direction
-	auto move = -1;
-	auto clockwise = true;
-	auto validDir = false;
-	while (move < 1 || move > globalState().numHoles || !validDir)
+	// We will successively modify the return state until
+	// it is the next player's turn
+	State returnState{currentState};
+
+	bool bonusMove = false;
+	do
 	{
-		// Reset the loop conditions
-		move = -1;
-		validDir = false;
-
-		// Get the move number
-		cout << "Select one of your holes (range is 1 - "
-				<< globalState().numHoles << ")" << endl;
-		auto input = string{};
-		getline(cin, input);
-		stringstream{input} >> move;
-
-		// Get the move direction
-		cout << "Move clockwise (cw) or counterclockwise (ccw)?" << endl;
-		getline(cin, input);
-		if (input.compare("ccw") == 0)
+		if (bonusMove)
 		{
-			validDir = true;
-			clockwise = false;
+			cout << "Bonus move! You get to go again!" << endl;
+			returnState.prettyPrint(cout);
 		}
-		else if (input.compare("cw") == 0)
-		{
-			validDir = true;
-			clockwise = true;
-		}
-		else
-		{
-			cout << "Invalid direction. Must be one of \"cw\" or \"ccw\""
-					<< endl;
-		}
-	}
 
-	// Apply the move
-	auto newState = State{currentState};
+		// Have the human enter the next move number and direction
+		auto move = -1;
+		auto clockwise = true;
+		auto validDir = false;
+		while (move < 1 || move > globalState().numHoles || !validDir)
+		{
+			// Reset the loop conditions
+			move = -1;
+			validDir = false;
 
+			// Get the move number
+			cout << "Select one of your holes (range is 1 - "
+					<< globalState().numHoles << ")" << endl;
+			auto input = string{};
+			getline(cin, input);
+			stringstream{input} >> move;
+
+			// Get the move direction
+			cout << "Move clockwise (cw) or counterclockwise (ccw)?" << endl;
+			getline(cin, input);
+			if (input.compare("ccw") == 0)
+			{
+				validDir = true;
+				clockwise = false;
+			}
+			else if (input.compare("cw") == 0)
+			{
+				validDir = true;
+				clockwise = true;
+			}
+			else
+			{
+				cout << "Invalid direction. Must be one of \"cw\" or \"ccw\""
+						<< endl;
+			}
+		}
+
+		// Apply the move
+		applyMove(returnState, Move{move, clockwise});
+
+		// Repeat the loop if we got a bonus move
+		bonusMove = returnState.getIsP1Turn() == currentState.getIsP1Turn();
+	} while (bonusMove);
+
+	return returnState;
+}
+
+void applyMove(State& state, const Move& move)
+{
 	// Take all the stones in the chosen hole and drop them in successive
 	// holes one by one.
-	auto iter = HoleIterator{Move{move, clockwise}, newState};
+	auto iter = HoleIterator{move, state};
 	auto stonesInHand = *iter;
 	*iter = 0;
 	while (stonesInHand > 0)
@@ -143,13 +166,13 @@ State nextHumanMove(const State& currentState)
 	// your own mancala.
 	if (*iter == 1 && iter.isOwnHole())
 	{
-		if (newState.getIsP1Turn())
+		if (state.getIsP1Turn())
 		{
-			newState.p1Captures += iter.opposite();
+			state.p1Captures += iter.opposite();
 		}
 		else
 		{
-			newState.p2Captures += iter.opposite();
+			state.p2Captures += iter.opposite();
 		}
 		iter.opposite() = 0;
 	}
@@ -157,8 +180,6 @@ State nextHumanMove(const State& currentState)
 	// If the final stone ends up in your mancala, you get another turn.
 	if (!iter.isOwnMancala())
 	{
-		newState.nextTurn();
+		state.nextTurn();
 	}
-
-	return newState;
 }
