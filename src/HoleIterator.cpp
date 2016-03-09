@@ -1,16 +1,26 @@
-/*
- * HoleIterator.cpp
+/**
+ * Helper class for when the user selects one of their holes for making a move.
  *
- *  Created on: Mar 9, 2016
- *      Author: derek
+ * Typical use case is the player has #numHoles number of holes, and they have
+ * to select one. Then they pick up all the stones in it and proceed in a
+ * clockwise or counterclockwise manner, placing one stone in each subsequent
+ * hole, but skipping the other player's mancala.
+ *
+ * This class abstracts away the complexity of figuring out where the mancalas
+ * are, skipping the other player's mancala, and going in a clockwise or
+ * counterclockwise fashion between the different players' hole vectors.
+ *
+ * All you need to do with this class is tell it the initial hole number
+ * the user picked, what the starting state was, and whether movement is
+ * clockwise or counterclockwise. Then it takes care of the rest, and all
+ * you have to do is call next() and dereference to get a reference to the
+ * actual data in the state, which you can read or modify as you please.
  */
-
 #include "HoleIterator.h"
 #include "State.h"
 #include "Settings.h"
 #include <cassert>
 
-// MoveNumber is from 1 - #holes
 HoleIterator::HoleIterator(uint8_t moveNumber, State& state, bool clockwise)
 : currentHole{moveNumber},
   state{state},
@@ -67,8 +77,8 @@ void HoleIterator::next()
 
 	if (clockwise)
 	{
-		if (currentHole + 1 == otherMancala1
-				|| currentHole + 1 == otherMancala2)
+		if ((currentHole + 1) % mod() == otherMancala1
+				|| (currentHole + 1) % mod() == otherMancala2)
 		{
 			currentHole = (currentHole + 2) % mod();
 		}
@@ -79,8 +89,8 @@ void HoleIterator::next()
 	}
 	else
 	{
-		if (currentHole - 1 == otherMancala1
-				|| currentHole - 1 == otherMancala2)
+		if ((mod() + currentHole - 1) % mod() == otherMancala1
+				|| (mod() + currentHole - 1) % mod() == otherMancala2)
 		{
 			currentHole = (mod() + currentHole - 2) % mod();
 		}
