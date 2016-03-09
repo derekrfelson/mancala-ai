@@ -27,8 +27,9 @@ public: /* Member functions */
 public: /* Data members */
 	std::vector<uint8_t> p1Holes;
 	std::vector<uint8_t> p2Holes;
-private:
 	uint8_t p1Captures;
+	uint8_t p2Captures;
+private:
 	bool isP1Turn;
 };
 

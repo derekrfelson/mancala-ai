@@ -6,6 +6,7 @@
 #include <vector>
 #include "Settings.h"
 #include "State.h"
+#include "HoleIterator.h"
 using namespace std;
 
 void usage();
@@ -64,13 +65,73 @@ int main(int argc, char** argv)
 	cout << startState << endl;
 	cout << endl;
 	startState.prettyPrint(cout);
-	cout << endl;
+
+	nextHumanMove(startState).prettyPrint(cout);
 
 	return 0;
 }
 
+// Note: this uses the currentState to determine whose move it is
 State nextHumanMove(const State& currentState)
 {
 	currentState.prettyPrint(cout);
-	cout << endl;
+
+	if (currentState.getIsP1Turn())
+	{
+		cout << "You are Player 1 (top)" << endl;
+	}
+	else
+	{
+		cout << "You are Player 2 (bottom)" << endl;
+	}
+
+	// Have the human enter the next move number and direction
+	auto move = -1;
+	auto clockwise = true;
+	auto validDir = false;
+	while (move < 1 || move > globalState().numHoles || !validDir)
+	{
+		// Reset the loop conditions
+		move = -1;
+		validDir = false;
+
+		// Get the move number
+		cout << "Select one of your holes (range is 1 - "
+				<< globalState().numHoles << ")" << endl;
+		auto input = string{};
+		getline(cin, input);
+		stringstream{input} >> move;
+
+		// Get the move direction
+		cout << "Move clockwise (cw) or counterclockwise (ccw)?" << endl;
+		getline(cin, input);
+		if (input.compare("ccw") == 0)
+		{
+			validDir = true;
+			clockwise = false;
+		}
+		else if (input.compare("cw") == 0)
+		{
+			validDir = true;
+			clockwise = true;
+		}
+		else
+		{
+			cout << "Invalid direction. Must be one of \"cw\" or \"ccw\""
+					<< endl;
+		}
+	}
+
+	// Apply the move
+	auto newState = State{currentState};
+	auto iter = HoleIterator{move, newState, true};
+	auto stonesInHand = *iter;
+	while (stonesInHand > 0)
+	{
+		iter.next();
+		*iter += 1;
+		stonesInHand -= 1;
+	}
+
+	return newState;
 }

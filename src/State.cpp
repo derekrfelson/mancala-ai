@@ -17,8 +17,10 @@ State::State(std::vector<uint8_t> p1Holes,
 : p1Holes{p1Holes},
   p2Holes{p2Holes},
   p1Captures{p1Captures},
+  p2Captures{0},
   isP1Turn{isP1Turn}
 {
+	p2Captures = globalState().totalStones() - getUncaptured();
 }
 
 uint8_t State::getP1Captures() const
@@ -28,7 +30,7 @@ uint8_t State::getP1Captures() const
 
 uint8_t State::getP2Captures() const
 {
-	return globalState().totalStones() - getUncaptured();
+	return p2Captures;
 }
 
 uint8_t State::getUncaptured() const
@@ -99,6 +101,7 @@ std::ostream& State::prettyPrint(std::ostream& stream) const
 		<< static_cast<int>(h) << "|";
 	}
 	stream << " * "; // Bottom right mancala
+	stream << std::endl;
 	return stream;
 }
 
