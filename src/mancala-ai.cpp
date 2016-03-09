@@ -66,7 +66,7 @@ int main(int argc, char** argv)
 	cout << endl;
 	startState.prettyPrint(cout);
 
-	nextHumanMove(startState).prettyPrint(cout);
+	nextHumanMove(nextHumanMove(startState)).prettyPrint(cout);
 
 	return 0;
 }
@@ -126,12 +126,14 @@ State nextHumanMove(const State& currentState)
 	auto newState = State{currentState};
 	auto iter = HoleIterator{move, newState, true};
 	auto stonesInHand = *iter;
+	*iter = 0;
 	while (stonesInHand > 0)
 	{
 		iter.next();
 		*iter += 1;
 		stonesInHand -= 1;
 	}
+	newState.nextTurn();
 
 	return newState;
 }
