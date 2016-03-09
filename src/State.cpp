@@ -52,6 +52,11 @@ bool State::getIsP1Turn() const
 	return isP1Turn;
 }
 
+void State::nextTurn()
+{
+	isP1Turn = !isP1Turn;
+}
+
 std::ostream& State::print(std::ostream& stream) const
 {
 	stream << static_cast<int>(p1Captures) << "/";
@@ -77,6 +82,8 @@ std::ostream& State::prettyPrint(std::ostream& stream) const
 	stream << "Uncaptured stones remaining: "
 			<< static_cast<int>(getUncaptured())
 			<< std::endl;
+	stream << "It is currently "
+			<< (isP1Turn ? "P1's" : "P2's") << " turn" << std::endl;
 
 	// Column labels for usability
 	stream << "  # ";

@@ -22,6 +22,7 @@ public: /* Member functions */
 	uint8_t getP2Captures() const;
 	uint8_t getUncaptured() const;
 	bool getIsP1Turn() const;
+	void nextTurn();
 	std::ostream& prettyPrint(std::ostream& stream) const;
 	std::ostream& print(std::ostream& stream) const;
 public: /* Data members */
