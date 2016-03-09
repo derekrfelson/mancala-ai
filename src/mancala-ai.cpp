@@ -124,7 +124,7 @@ State nextHumanMove(const State& currentState)
 
 	// Apply the move
 	auto newState = State{currentState};
-	auto iter = HoleIterator{move, newState, true};
+	auto iter = HoleIterator{move, newState, clockwise};
 	auto stonesInHand = *iter;
 	*iter = 0;
 	while (stonesInHand > 0)
