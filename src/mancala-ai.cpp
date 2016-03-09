@@ -1,6 +1,11 @@
 #include <iostream>
 #include <cstring>
 #include <sstream>
+#include <string>
+#include <cstddef>
+#include <vector>
+#include "Settings.h"
+#include "State.h"
 using namespace std;
 
 void usage()
@@ -28,6 +33,7 @@ int main(int argc, char** argv)
 		usage();
 		return 1;
 	}
+	globalState().numStones = stones;
 
 	auto holes = -1;
 	stringstream{argv[2]} >> holes;
@@ -36,9 +42,25 @@ int main(int argc, char** argv)
 		usage();
 		return 1;
 	}
+	globalState().numHoles = holes;
 
 	cout << "Holes: " << holes << endl;
 	cout << "Stones: " << stones << endl;
+
+	auto p1Holes = vector<uint8_t>{};
+	auto p2Holes = vector<uint8_t>{};
+	for (auto i = 0; i < globalState().numHoles; ++i)
+	{
+		p1Holes.push_back(globalState().numStones);
+		p2Holes.push_back(globalState().numStones);
+	}
+
+	auto startState = State{p1Holes, p2Holes, 0};
+
+	cout << startState << endl;
+	cout << endl;
+	startState.prettyPrint(cout);
+	cout << endl;
 
 	return 0;
 }
