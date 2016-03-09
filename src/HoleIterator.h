@@ -18,6 +18,9 @@ public:
 	HoleIterator(const Move& move, State& state);
 	void next();
 	uint8_t& operator*();
+	uint8_t& opposite();
+	bool isOwnMancala() const;
+	bool isOwnHole() const;
 private:
 	uint8_t currentHole;
 	State& state;

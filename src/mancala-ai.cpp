@@ -125,6 +125,9 @@ State nextHumanMove(const State& currentState)
 
 	// Apply the move
 	auto newState = State{currentState};
+
+	// Take all the stones in the chosen hole and drop them in successive
+	// holes one by one.
 	auto iter = HoleIterator{Move{move, clockwise}, newState};
 	auto stonesInHand = *iter;
 	*iter = 0;
@@ -134,7 +137,28 @@ State nextHumanMove(const State& currentState)
 		*iter += 1;
 		stonesInHand -= 1;
 	}
-	newState.nextTurn();
+
+	// If the final stone ends up in an empty hole of yours, you get to
+	// add all the stones in your opponent's corresponding hole into
+	// your own mancala.
+	if (*iter == 1 && iter.isOwnHole())
+	{
+		if (newState.getIsP1Turn())
+		{
+			newState.p1Captures += iter.opposite();
+		}
+		else
+		{
+			newState.p2Captures += iter.opposite();
+		}
+		iter.opposite() = 0;
+	}
+
+	// If the final stone ends up in your mancala, you get another turn.
+	if (!iter.isOwnMancala())
+	{
+		newState.nextTurn();
+	}
 
 	return newState;
 }

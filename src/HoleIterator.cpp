@@ -73,14 +73,12 @@ HoleIterator::HoleIterator(const Move& move, State& state)
 
 void HoleIterator::next()
 {
-	// Check if the next is the other person's mancala
-
-
 	if (clockwise)
 	{
 		if ((currentHole + 1) % mod() == otherMancala1
 				|| (currentHole + 1) % mod() == otherMancala2)
 		{
+			// Skip other player's mancala
 			currentHole = (currentHole + 2) % mod();
 		}
 		else
@@ -93,6 +91,7 @@ void HoleIterator::next()
 		if ((mod() + currentHole - 1) % mod() == otherMancala1
 				|| (mod() + currentHole - 1) % mod() == otherMancala2)
 		{
+			// Skip other player's mancala
 			currentHole = (mod() + currentHole - 2) % mod();
 		}
 		else
@@ -105,7 +104,7 @@ void HoleIterator::next()
 uint8_t& HoleIterator::operator*()
 {
 	assert(currentHole != otherMancala1 && currentHole != otherMancala2);
-	if (currentHole == myMancala1 || currentHole == myMancala2)
+	if (isOwnMancala())
 	{
 		if (state.getIsP1Turn())
 		{
@@ -147,7 +146,47 @@ uint8_t& HoleIterator::operator*()
 	}
 }
 
+// Instead of returning a reference to the hole or mancala that the iterator
+// is currently pointing to, return a reference to the corresponding hole
+// of the other player. Must only be called when the iterator is on
+// one of the player's own holes, not the player's mancala or one of the other
+// player's holes.
+uint8_t& HoleIterator::opposite()
+{
+	assert(!isOwnMancala());
+	assert(currentHole != otherMancala1 && currentHole != otherMancala2);
+	assert(isOwnHole());
+	if (state.getIsP1Turn())
+	{
+		return state.p2Holes[currentHole-1];
+	}
+	else
+	{
+		auto holeIndex = mod()-2-currentHole;
+		assert(holeIndex >= 0 && holeIndex < state.p2Holes.size());
+		return state.p1Holes[holeIndex];
+	}
+}
+
 uint8_t HoleIterator::mod() const
 {
 	return globalState().numHoles * 2 + 4;
+}
+
+bool HoleIterator::isOwnMancala() const
+{
+	return currentHole == myMancala1 || currentHole == myMancala2;
+}
+
+bool HoleIterator::isOwnHole() const
+{
+	if (state.getIsP1Turn())
+	{
+		return currentHole >= 1 && currentHole <= globalState().numHoles;
+	}
+	else
+	{
+		return currentHole <= mod() - 2
+				&& currentHole >= globalState().numHoles + 3;
+	}
 }
