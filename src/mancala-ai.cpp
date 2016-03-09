@@ -8,6 +8,9 @@
 #include "State.h"
 using namespace std;
 
+void usage();
+State nextHumanMove(const State& currentState);
+
 void usage()
 {
 	cerr << "Usage: mancala [stones] [holes]" << endl;
@@ -55,7 +58,8 @@ int main(int argc, char** argv)
 		p2Holes.push_back(globalState().numStones);
 	}
 
-	auto startState = State{p1Holes, p2Holes, 0};
+	// Create starting state
+	auto startState = State{p1Holes, p2Holes, 0, true};
 
 	cout << startState << endl;
 	cout << endl;
@@ -63,4 +67,10 @@ int main(int argc, char** argv)
 	cout << endl;
 
 	return 0;
+}
+
+State nextHumanMove(const State& currentState)
+{
+	currentState.prettyPrint(cout);
+	cout << endl;
 }

@@ -16,10 +16,12 @@ struct State {
 public: /* Member functions */
 	State(std::vector<uint8_t> p1Holes,
 			std::vector<uint8_t> p2Holes,
-			uint8_t p1Captures);
+			uint8_t p1Captures,
+			bool isP1Turn);
 	uint8_t getP1Captures() const;
 	uint8_t getP2Captures() const;
 	uint8_t getUncaptured() const;
+	bool getIsP1Turn() const;
 	std::ostream& prettyPrint(std::ostream& stream) const;
 	std::ostream& print(std::ostream& stream) const;
 public: /* Data members */
@@ -27,6 +29,7 @@ public: /* Data members */
 	std::vector<uint8_t> p2Holes;
 private:
 	uint8_t p1Captures;
+	bool isP1Turn;
 };
 
 std::ostream& operator<<(std::ostream& stream, const State& state);

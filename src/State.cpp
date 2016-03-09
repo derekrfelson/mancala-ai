@@ -12,10 +12,12 @@
 
 State::State(std::vector<uint8_t> p1Holes,
 			std::vector<uint8_t> p2Holes,
-			uint8_t p1Captures)
+			uint8_t p1Captures,
+			bool isP1Turn)
 : p1Holes{p1Holes},
   p2Holes{p2Holes},
-  p1Captures{p1Captures}
+  p1Captures{p1Captures},
+  isP1Turn{isP1Turn}
 {
 }
 
@@ -41,6 +43,11 @@ uint8_t State::getUncaptured() const
 		sum += c;
 	}
 	return sum;
+}
+
+bool State::getIsP1Turn() const
+{
+	return isP1Turn;
 }
 
 std::ostream& State::print(std::ostream& stream) const
