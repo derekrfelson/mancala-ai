@@ -8,11 +8,23 @@
 #include "Move.h"
 #include "State.h"
 #include "HoleIterator.h"
+#include <ostream>
 
 Move::Move(uint8_t holeNumber, bool clockwise)
 : holeNumber{holeNumber},
   clockwise{clockwise}
 {
+}
+
+std::ostream& Move::print(std::ostream& stream) const
+{
+	return stream << "Move{" << static_cast<int>(holeNumber) << ","
+			<< (clockwise ? "cw" : "ccw") << "}";
+}
+
+std::ostream& operator<<(std::ostream& stream, const Move& move)
+{
+	return move.print(stream);
 }
 
 void applyMove(State& state, const Move& move)

@@ -4,10 +4,12 @@
 #include <string>
 #include <cstddef>
 #include <vector>
+#include <queue>
 #include "Settings.h"
 #include "State.h"
 #include "Move.h"
 #include "HoleIterator.h"
+#include "MoveIterator.h"
 using namespace std;
 
 void usage();
@@ -67,7 +69,23 @@ int main(int argc, char** argv)
 	cout << endl;
 	startState.prettyPrint(cout);
 
-	nextHumanMove(nextHumanMove(startState)).prettyPrint(cout);
+	auto mi = MoveIterator{startState};
+	while (mi.hasNext())
+	{
+		State projectedState{startState};
+		queue<Move> nextMoves = *mi;
+		while (!nextMoves.empty())
+		{
+			cout << "Applying " << nextMoves.front() << " in inner loop" << endl;
+			applyMove(projectedState, nextMoves.front());
+			nextMoves.pop();
+		}
+		cout << "Projected state: " << endl;
+		projectedState.prettyPrint(cout);
+		mi.next();
+	}
+
+	//nextHumanMove(nextHumanMove(startState)).prettyPrint(cout);
 
 	return 0;
 }

@@ -9,6 +9,7 @@
 #define SRC_MOVEITERATOR_H_
 
 #include "Move.h"
+#include "State.h"
 #include <memory>
 #include <queue>
 
@@ -17,12 +18,12 @@ const Move& NO_MORE_MOVES();
 class MoveIterator
 {
 public:
-	explicit MoveIterator(State& state);
+	explicit MoveIterator(const State& state);
 	bool hasNext();
 	void next();
 	std::queue<Move> operator*();
 private:
-	State& state;
+	State state;
 	Move move;
 	std::unique_ptr<MoveIterator> bonusMove;
 };
