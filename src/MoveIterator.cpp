@@ -10,7 +10,6 @@
 #include "Settings.h"
 #include "State.h"
 #include <queue>
-#include <iostream>
 
 MoveIterator::MoveIterator(const State& state)
 : state{state},
@@ -21,8 +20,20 @@ MoveIterator::MoveIterator(const State& state)
 
 bool MoveIterator::hasNext()
 {
-	return move.clockwise != NO_MORE_MOVES().clockwise
-			|| move.holeNumber != NO_MORE_MOVES().holeNumber;
+	if (move.holeNumber < globalState().numHoles)
+	{
+		return true;
+	}
+	else if (move.holeNumber == globalState().numHoles)
+	{
+		// Last move is {numHoles, clockwise=true}
+		return !move.clockwise;
+	}
+	else
+	{
+		// Hole number exceeded actual number of holes
+		return false;
+	}
 }
 
 void MoveIterator::next()
@@ -32,7 +43,6 @@ void MoveIterator::next()
 	{
 		if (bonusMove->hasNext())
 		{
-			std::cout << "next() deferring to bonus iterator" << std::endl;
 			bonusMove->next();
 			return;
 		}
@@ -58,19 +68,11 @@ void MoveIterator::next()
 		if (move.holeNumber > globalState().numHoles)
 		{
 			move = NO_MORE_MOVES();
-			std::cout << "next() indicating no more moves" << std::endl;
 		}
 	}
 
-	std::cerr << "next() called, projecting state" << std::endl;
 	// Try out the move and see if it leads to bonus moves
-	//auto projectedState = std::make_unique<State>(state); // problems here?
-	State projectedState{
-			state.p1Holes,
-			state.p2Holes,
-			state.p1Captures,
-			state.getIsP1Turn()};
-	std::cerr << "done projecting state" << std::endl;
+	auto projectedState = state;
 	applyMove(projectedState, move);
 	if (projectedState.getIsP1Turn() == state.getIsP1Turn())
 	{
@@ -91,7 +93,6 @@ std::queue<Move> MoveIterator::operator*()
 			bms.pop();
 		}
 	}
-	std::cout << "operator* returning queue of size " << ret.size() << std::endl;
 	return ret;
 }
 
