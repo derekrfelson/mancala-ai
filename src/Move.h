@@ -9,6 +9,7 @@
 #define SRC_MOVE_H_
 
 #include <cstdint>
+class State;
 
 struct Move
 {
@@ -17,5 +18,7 @@ public:
 	uint8_t holeNumber;
 	bool clockwise;
 };
+
+void applyMove(State& state, const Move& move);
 
 #endif /* SRC_MOVE_H_ */

@@ -1,0 +1,30 @@
+/*
+ * MoveIterator.h
+ *
+ *  Created on: Mar 9, 2016
+ *      Author: derek
+ */
+
+#ifndef SRC_MOVEITERATOR_H_
+#define SRC_MOVEITERATOR_H_
+
+#include "Move.h"
+#include <memory>
+#include <queue>
+
+const Move& NO_MORE_MOVES();
+
+class MoveIterator
+{
+public:
+	explicit MoveIterator(State& state);
+	bool hasNext();
+	void next();
+	std::queue<Move> operator*();
+private:
+	State& state;
+	Move move;
+	std::unique_ptr<MoveIterator> bonusMove;
+};
+
+#endif /* SRC_MOVEITERATOR_H_ */
