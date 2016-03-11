@@ -25,5 +25,6 @@ public:
 void applyMove(State& state, const Move& move);
 void applyMoves(State& state, std::queue<Move> moves);
 std::ostream& operator<<(std::ostream& stream, const Move& move);
+void printMoves(std::queue<Move> moves);
 
 #endif /* SRC_MOVE_H_ */

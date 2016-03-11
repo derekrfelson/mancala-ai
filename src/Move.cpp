@@ -9,6 +9,7 @@
 #include "State.h"
 #include "HoleIterator.h"
 #include <ostream>
+#include <iostream>
 
 Move::Move(uint8_t holeNumber, bool clockwise)
 : holeNumber{holeNumber},
@@ -104,6 +105,15 @@ void applyMoves(State& state, std::queue<Move> moves)
 	while (!moves.empty())
 	{
 		applyMove(state, moves.front());
+		moves.pop();
+	}
+}
+
+void printMoves(std::queue<Move> moves)
+{
+	while (!moves.empty())
+	{
+		std::cout << moves.front() << ",";
 		moves.pop();
 	}
 }

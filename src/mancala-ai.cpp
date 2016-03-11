@@ -75,6 +75,8 @@ int main(int argc, char** argv)
 	auto isHumanTurn = true;
 	while (!startState.isEndState())
 	{
+		cout << endl;
+		cout << endl;
 		if (isHumanTurn)
 		{
 			startState = nextHumanMove(startState);
@@ -83,7 +85,6 @@ int main(int argc, char** argv)
 		{
 			startState = nextAiMove(startState);
 		}
-		startState.prettyPrint(cout);
 		isHumanTurn = !isHumanTurn;
 	}
 
@@ -92,6 +93,18 @@ int main(int argc, char** argv)
 
 State nextAiMove(const State& currentState)
 {
+	// Show the current state so the user knows what's going on
+	cout << "AI's turn" << endl;
+	if (currentState.getIsP1Turn())
+	{
+		cout << "AI is Player 1 (top)" << endl;
+	}
+	else
+	{
+		cout << "AI is Player 2 (bottom)" << endl;
+	}
+	currentState.prettyPrint(cout);
+
 	auto fringe = stack<Node>{};
 	// Limiting the search depth to 1 seems to lead to optimal play.
 	// Because the AI assumes the human plays perfectly, allowing a deeper
@@ -123,7 +136,11 @@ State nextAiMove(const State& currentState)
 	}
 
 	auto newState = currentState;
-	applyMoves(newState, fringe.top().getBestMove());
+	auto moves = fringe.top().getBestMove();
+	cout << "AI chose moves: ";
+	printMoves(moves);
+	cout << endl;
+	applyMoves(newState, moves);
 	return newState;
 }
 
@@ -131,7 +148,6 @@ State nextAiMove(const State& currentState)
 State nextHumanMove(const State& currentState)
 {
 	// Show the current state so the user knows what's going on
-	currentState.prettyPrint(cout);
 	if (currentState.getIsP1Turn())
 	{
 		cout << "You are Player 1 (top)" << endl;
@@ -140,6 +156,7 @@ State nextHumanMove(const State& currentState)
 	{
 		cout << "You are Player 2 (bottom)" << endl;
 	}
+	currentState.prettyPrint(cout);
 
 	// We will successively modify the return state until
 	// it is the next player's turn
