@@ -14,6 +14,7 @@ using namespace std;
 
 void usage();
 State nextHumanMove(const State& currentState);
+State nextAiMove(const State& currentState);
 
 void usage()
 {
@@ -73,14 +74,7 @@ int main(int argc, char** argv)
 	while (mi.hasNext())
 	{
 		State projectedState{startState};
-		queue<Move> nextMoves = *mi;
-		while (!nextMoves.empty())
-		{
-			cout << "Applying " << nextMoves.front() << " in inner loop" << endl;
-			applyMove(projectedState, nextMoves.front());
-			nextMoves.pop();
-		}
-		cout << "Projected state: " << endl;
+		applyMoves(projectedState, *mi);
 		projectedState.prettyPrint(cout);
 		mi.next();
 	}
@@ -88,6 +82,11 @@ int main(int argc, char** argv)
 	//nextHumanMove(nextHumanMove(startState)).prettyPrint(cout);
 
 	return 0;
+}
+
+State nextAiMove(const State& currentState)
+{
+	return currentState;
 }
 
 // Note: this uses the currentState to determine whose move it is

@@ -62,4 +62,48 @@ void applyMove(State& state, const Move& move)
 	{
 		state.nextTurn();
 	}
+
+	// If one player has no more stones on his side, we let the other
+	// player capture all the stones on his own side, and the game ends.
+	if (state.isEndState())
+	{
+		// See if it's P1 or P2 who has no more stones
+		bool p1Done = true; // Assume it's P1 to start
+		for (auto val : state.p1Holes)
+		{
+			if (val != 0)
+			{
+				// P1 still has stones, so P2 is the one who finished
+				p1Done = false;
+				break;
+			}
+		}
+
+		// Let the other player capture all remaining pieces
+		if (p1Done)
+		{
+			for (auto& val : state.p2Holes)
+			{
+				state.p2Captures += val;
+				val = 0;
+			}
+		}
+		else
+		{
+			for (auto& val : state.p1Holes)
+			{
+				state.p1Captures += val;
+				val = 0;
+			}
+		}
+	}
+}
+
+void applyMoves(State& state, std::queue<Move> moves)
+{
+	while (!moves.empty())
+	{
+		applyMove(state, moves.front());
+		moves.pop();
+	}
 }

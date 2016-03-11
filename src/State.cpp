@@ -57,6 +57,32 @@ void State::nextTurn()
 	isP1Turn = !isP1Turn;
 }
 
+/**
+ * The game is over when at least one player has no more stones on their side.
+ */
+bool State::isEndState() const
+{
+	uint8_t sum = 0;
+	for (auto val : p1Holes)
+	{
+		sum += val;
+	}
+	if (sum == 0)
+	{
+		return true;
+	}
+	sum = 0;
+	for (auto val : p2Holes)
+	{
+		sum += val;
+	}
+	if (sum == 0)
+	{
+		return true;
+	}
+	return false;
+}
+
 std::ostream& State::print(std::ostream& stream) const
 {
 	stream << static_cast<int>(p1Captures) << "/";

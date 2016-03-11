@@ -10,6 +10,7 @@
 
 #include <cstdint>
 #include <iosfwd>
+#include <queue>
 class State;
 
 struct Move
@@ -22,6 +23,7 @@ public:
 };
 
 void applyMove(State& state, const Move& move);
+void applyMoves(State& state, std::queue<Move> moves);
 std::ostream& operator<<(std::ostream& stream, const Move& move);
 
 #endif /* SRC_MOVE_H_ */

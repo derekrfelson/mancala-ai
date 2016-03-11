@@ -24,6 +24,7 @@ public: /* Member functions */
 	uint8_t getUncaptured() const;
 	bool getIsP1Turn() const;
 	void nextTurn();
+	bool isEndState() const;
 	std::ostream& prettyPrint(std::ostream& stream) const;
 	std::ostream& print(std::ostream& stream) const;
 public: /* Data members */
