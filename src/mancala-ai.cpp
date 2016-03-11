@@ -88,6 +88,22 @@ int main(int argc, char** argv)
 		isHumanTurn = !isHumanTurn;
 	}
 
+	cout << endl;
+	cout << endl;
+	cout << "GAME OVER" << endl;
+	if (startState.p1Captures > startState.p2Captures)
+	{
+		cout << "Player 1 wins" << endl;
+	}
+	else if (startState.p1Captures < startState.p2Captures)
+	{
+		cout << "Player 2 wins" << endl;
+	}
+	else
+	{
+		cout << "Game ended in a tie" << endl;
+	}
+
 	return 0;
 }
 
@@ -110,7 +126,7 @@ State nextAiMove(const State& currentState)
 	// Because the AI assumes the human plays perfectly, allowing a deeper
 	// search causes it to dismiss options that could lead to victory
 	// when the human plays poorly.
-	fringe.emplace(Node{currentState, 1, true});
+	fringe.emplace(Node{currentState, 4, true});
 
 	while (!fringe.empty())
 	{
