@@ -96,6 +96,7 @@ std::ostream& State::print(std::ostream& stream) const
 		stream << static_cast<int>(p2Holes[i]) << ",";
 	}
 	stream << static_cast<int>(p2Holes[p2Holes.size()-1]);
+	stream << "/" << static_cast<int>(p2Captures);
 	return stream;
 }
 

@@ -126,10 +126,12 @@ State nextAiMove(const State& currentState)
 	// Because the AI assumes the human plays perfectly, allowing a deeper
 	// search causes it to dismiss options that could lead to victory
 	// when the human plays poorly.
-	fringe.emplace(Node{currentState, 4, true});
+	fringe.emplace(Node{currentState, 1, true});
 
 	while (!fringe.empty())
 	{
+		cout << "AI is evaluating move " << fringe.top() << endl;
+
 		if (fringe.top().hasNextNode())
 		{
 			// Expand the next node, and make that the top of the stack
@@ -157,6 +159,9 @@ State nextAiMove(const State& currentState)
 	printMoves(moves);
 	cout << endl;
 	applyMoves(newState, moves);
+	cout << "Heuristic rates this state as "
+			<< calculateHeuristic1(newState,
+					currentState.getIsP1Turn()) << endl;
 	return newState;
 }
 

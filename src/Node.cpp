@@ -9,6 +9,8 @@
 #include "State.h"
 #include "Move.h"
 #include "MoveIterator.h"
+#include <ostream>
+#include <iostream>
 #include <cassert>
 
 Node::Node(const State& state, Node* const parent,
@@ -60,9 +62,20 @@ int Node::getValue() const
 {
 	if (parent && ((depth == 0) || isTerminalState()))
 	{
-		return calculateHeuristic1(state);
+		std::cout << "getValue() using heuristic" << std::endl;
+		return calculateHeuristic1(state, false);
 	}
 
+	if (maximizer)
+	{
+		std::cout << "getValue() returning alpha" << std::endl;
+		return alpha;
+	}
+	else
+	{
+		std::cout << "getValue() returning beta" << std::endl;
+		return beta;
+	}
 	return maximizer ? alpha : beta;
 }
 
@@ -76,8 +89,12 @@ void Node::updateParent()
 
 void Node::update(const Node& child)
 {
+	std::cout << "Node::update" << std::endl;
 	if (maximizer)
 	{
+		std::cout << "Node is maximizer" << std::endl;
+		std::cout << "Child value: " << child.getValue() << std::endl;
+		std::cout << "alpha: " << alpha << ", beta: " << beta << std::endl;
 		// the value of a maximizer node is the highest
 		// value of any of its children. It stores this
 		// value as its alpha.
@@ -92,10 +109,17 @@ void Node::update(const Node& child)
 			{
 				bestMove = std::make_unique<std::queue<Move> >(*child.action);
 			}
+			std::cout << "New alpha: " << alpha << std::endl;
+			std::cout << "New best move: ";
+			printMoves(*bestMove);
+			std::cout << std::endl;
 		}
 	}
 	else
 	{
+		std::cout << "Node is minimizer" << std::endl;
+		std::cout << "Child value: " << child.getValue() << std::endl;
+		std::cout << "alpha: " << alpha << ", beta: " << beta << std::endl;
 		// The value of a minimizer node is the lowest
 		// value of any of its children. It stores this
 		// value as its beta.
@@ -110,6 +134,10 @@ void Node::update(const Node& child)
 			{
 				bestMove = std::make_unique<std::queue<Move> >(*child.action);
 			}
+			std::cout << "New beta: " << beta << std::endl;
+			std::cout << "New best move: ";
+			printMoves(*bestMove);
+			std::cout << std::endl;
 		}
 	}
 }
@@ -127,10 +155,11 @@ std::queue<Move> Node::getBestMove() const
 
 std::ostream& Node::print(std::ostream& stream) const
 {
-	/*stream << "Node{ State{ " << state << " }, Action=";
+	stream << "Node{ depth=" << static_cast<int>(depth) << ", "
+			<< "State{ " << state << " }, Action=";
 	if (action)
 	{
-		stream << *action;
+		printMoves(*action);
 	}
 	else
 	{
@@ -139,14 +168,14 @@ std::ostream& Node::print(std::ostream& stream) const
 	stream << ", BestMove=";
 	if (bestMove)
 	{
-		stream << *bestMove;
+		printMoves(*bestMove);
 	}
 	else
 	{
 		stream << "null";
 	}
-	return stream << " }";*/
-	return stream;
+	stream << ", value=" << calculateHeuristic1(state, false);
+	return stream << " }";
 }
 
 std::ostream& operator<<(std::ostream& stream, const Node& node)
@@ -158,9 +187,9 @@ std::ostream& operator<<(std::ostream& stream, const Node& node)
  * First heuristic is simple: the number of stones the current player
  * has captured, minus the number of stones the opponent has captured.
  */
-int calculateHeuristic1(const State& state)
+int calculateHeuristic1(const State& state, bool p1IsMaximizer)
 {
-	if (state.getIsP1Turn())
+	if (p1IsMaximizer)
 	{
 		return state.p1Captures - state.p2Captures;
 	}
