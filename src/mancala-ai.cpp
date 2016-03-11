@@ -5,11 +5,13 @@
 #include <cstddef>
 #include <vector>
 #include <queue>
+#include <stack>
 #include "Settings.h"
 #include "State.h"
 #include "Move.h"
 #include "HoleIterator.h"
 #include "MoveIterator.h"
+#include "Node.h"
 using namespace std;
 
 void usage();
@@ -70,23 +72,59 @@ int main(int argc, char** argv)
 	cout << endl;
 	startState.prettyPrint(cout);
 
-	auto mi = MoveIterator{startState};
-	while (mi.hasNext())
+	auto isHumanTurn = true;
+	while (!startState.isEndState())
 	{
-		State projectedState{startState};
-		applyMoves(projectedState, *mi);
-		projectedState.prettyPrint(cout);
-		mi.next();
+		if (isHumanTurn)
+		{
+			startState = nextHumanMove(startState);
+		}
+		else
+		{
+			startState = nextAiMove(startState);
+		}
+		startState.prettyPrint(cout);
+		isHumanTurn = !isHumanTurn;
 	}
-
-	//nextHumanMove(nextHumanMove(startState)).prettyPrint(cout);
 
 	return 0;
 }
 
 State nextAiMove(const State& currentState)
 {
-	return currentState;
+	auto fringe = stack<Node>{};
+	// Limiting the search depth to 1 seems to lead to optimal play.
+	// Because the AI assumes the human plays perfectly, allowing a deeper
+	// search causes it to dismiss options that could lead to victory
+	// when the human plays poorly.
+	fringe.emplace(Node{currentState, 1, true});
+
+	while (!fringe.empty())
+	{
+		if (fringe.top().hasNextNode())
+		{
+			// Expand the next node, and make that the top of the stack
+			fringe.top().expandNextNode(fringe);
+			// Following ordinary stack rules, we can only ever operate on the
+			// top element, so go back to the start of the loop.
+		}
+		else
+		{
+			if (fringe.size() > 1)
+			{
+				fringe.top().updateParent();
+				fringe.pop();
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+
+	auto newState = currentState;
+	applyMoves(newState, fringe.top().getBestMove());
+	return newState;
 }
 
 // Note: this uses the currentState to determine whose move it is

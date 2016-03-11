@@ -18,7 +18,7 @@ MoveIterator::MoveIterator(const State& state)
 {
 }
 
-bool MoveIterator::hasNext()
+bool MoveIterator::hasNext() const
 {
 	if (move.holeNumber < globalState().numHoles)
 	{

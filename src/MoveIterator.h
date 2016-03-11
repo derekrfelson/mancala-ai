@@ -19,7 +19,7 @@ class MoveIterator
 {
 public:
 	explicit MoveIterator(const State& state);
-	bool hasNext();
+	bool hasNext() const;
 	void next();
 	std::queue<Move> operator*();
 private:
