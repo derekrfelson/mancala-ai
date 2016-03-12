@@ -5,11 +5,11 @@
  *      Author: derek
  */
 
-#include <ostream>
-#include <iomanip>
 #include "State.h"
 #include "Settings.h"
-#include <iostream>
+#include <ostream>
+#include <iomanip>
+#include <cassert>
 
 State::State()
 : p1Holes(globalState().numHoles, globalState().numStones), // Must use ()'s
@@ -18,8 +18,6 @@ State::State()
   p2Captures{0},
   isP1Turn{true}
 {
-	std::cout << "numHoles: " << globalState().numHoles << std::endl;
-	std::cout << "p1Holes.size(): " << p1Holes.size() << std::endl;
 }
 
 State::State(std::vector<uint8_t> p1Holes,
@@ -32,16 +30,20 @@ State::State(std::vector<uint8_t> p1Holes,
   p2Captures{0},
   isP1Turn{isP1Turn}
 {
-	p2Captures = globalState().totalStones() - getUncaptured();
+	p2Captures = globalState().totalStones() - getUncaptured() - p1Captures;
 }
 
 uint8_t State::getP1Captures() const
 {
+	assert(p1Captures
+				== globalState().totalStones() - getUncaptured() - p2Captures);
 	return p1Captures;
 }
 
 uint8_t State::getP2Captures() const
 {
+	assert(p2Captures
+			== globalState().totalStones() - getUncaptured() - p1Captures);
 	return p2Captures;
 }
 
@@ -97,6 +99,10 @@ bool State::isEndState() const
 
 std::ostream& State::print(std::ostream& stream) const
 {
+	if (isP1Turn)
+	{
+		stream << "*";
+	}
 	stream << static_cast<int>(p1Captures) << "/";
 	for (auto i = 0; i < p1Holes.size()-1; ++i)
 	{
@@ -109,6 +115,10 @@ std::ostream& State::print(std::ostream& stream) const
 	}
 	stream << static_cast<int>(p2Holes[p2Holes.size()-1]);
 	stream << "/" << static_cast<int>(p2Captures);
+	if (!isP1Turn)
+	{
+		stream << "*";
+	}
 	return stream;
 }
 
