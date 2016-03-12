@@ -36,6 +36,12 @@ bool MoveIterator::hasNext() const
 	}
 }
 
+bool MoveIterator::isValid() const
+{
+	return move.holeNumber <= globalState().numHoles
+			&& move.holeNumber >= 1;
+}
+
 void MoveIterator::next()
 {
 	// If we're on a bonus move, defer to the bonus move iterator
@@ -71,12 +77,15 @@ void MoveIterator::next()
 		}
 	}
 
-	// Try out the move and see if it leads to bonus moves
-	auto projectedState = state;
-	applyMove(projectedState, move);
-	if (projectedState.getIsP1Turn() == state.getIsP1Turn())
+	if (isValid())
 	{
-		bonusMove = std::make_unique<MoveIterator>(projectedState);
+		// Try out the move and see if it leads to bonus moves
+		auto projectedState = state;
+		applyMove(projectedState, move);
+		if (projectedState.getIsP1Turn() == state.getIsP1Turn())
+		{
+			bonusMove = std::make_unique<MoveIterator>(projectedState);
+		}
 	}
 }
 

@@ -43,19 +43,19 @@ Node::Node(const State& state, uint8_t depth, bool maximizer)
 bool Node::hasNextNode() const
 {
 	return (depth > 0) && (!isTerminalState())
-			&& (iter.hasNext()) && (beta > alpha);
+			&& (iter.isValid()) && (beta > alpha);
 }
 
 void Node::expandNextNode(std::stack<Node>& fringe)
 {
-	assert(iter.hasNext());
-	iter.next();
+	assert(iter.isValid());
 	auto newState = state;
 	auto newMove = std::make_unique<std::queue<Move> >(*iter);
 	applyMoves(newState, *newMove);
 	fringe.emplace(Node{newState, this,
 						std::move(newMove), depth > 0 ? depth - 1 : 0,
 						alpha, beta, !maximizer});
+	iter.next();
 }
 
 int Node::getValue() const

@@ -8,8 +8,10 @@
 #include "Move.h"
 #include "State.h"
 #include "HoleIterator.h"
+#include "Settings.h"
 #include <ostream>
 #include <iostream>
+#include <cassert>
 
 Move::Move(uint8_t holeNumber, bool clockwise)
 : holeNumber{holeNumber},
@@ -30,6 +32,8 @@ std::ostream& operator<<(std::ostream& stream, const Move& move)
 
 void applyMove(State& state, const Move& move)
 {
+	assert(move.holeNumber > 0 && move.holeNumber <= globalState().numHoles);
+
 	// Take all the stones in the chosen hole and drop them in successive
 	// holes one by one.
 	auto iter = HoleIterator{move, state};
