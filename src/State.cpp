@@ -9,6 +9,18 @@
 #include <iomanip>
 #include "State.h"
 #include "Settings.h"
+#include <iostream>
+
+State::State()
+: p1Holes(globalState().numHoles, globalState().numStones), // Must use ()'s
+  p2Holes(globalState().numHoles, globalState().numStones), // Must use ()'s
+  p1Captures{0},
+  p2Captures{0},
+  isP1Turn{true}
+{
+	std::cout << "numHoles: " << globalState().numHoles << std::endl;
+	std::cout << "p1Holes.size(): " << p1Holes.size() << std::endl;
+}
 
 State::State(std::vector<uint8_t> p1Holes,
 			std::vector<uint8_t> p2Holes,

@@ -15,7 +15,8 @@
 struct State
 {
 public: /* Member functions */
-	State(std::vector<uint8_t> p1Holes,
+	explicit State();
+	explicit State(std::vector<uint8_t> p1Holes,
 			std::vector<uint8_t> p2Holes,
 			uint8_t p1Captures,
 			bool isP1Turn);

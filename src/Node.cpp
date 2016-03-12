@@ -62,21 +62,17 @@ int Node::getValue() const
 {
 	if (parent && ((depth == 0) || isTerminalState()))
 	{
-		std::cout << "getValue() using heuristic" << std::endl;
 		return calculateHeuristic1(state, false);
 	}
 
 	if (maximizer)
 	{
-		std::cout << "getValue() returning alpha" << std::endl;
 		return alpha;
 	}
 	else
 	{
-		std::cout << "getValue() returning beta" << std::endl;
 		return beta;
 	}
-	return maximizer ? alpha : beta;
 }
 
 void Node::updateParent()
@@ -89,12 +85,10 @@ void Node::updateParent()
 
 void Node::update(const Node& child)
 {
-	std::cout << "Node::update" << std::endl;
 	if (maximizer)
 	{
-		std::cout << "Node is maximizer" << std::endl;
-		std::cout << "Child value: " << child.getValue() << std::endl;
-		std::cout << "alpha: " << alpha << ", beta: " << beta << std::endl;
+		std::cout << "Maximizer (a=" << alpha << ",b=" << beta << ")"
+				<< " updating on " << child.getValue() << std::endl;
 		// the value of a maximizer node is the highest
 		// value of any of its children. It stores this
 		// value as its alpha.
@@ -109,17 +103,15 @@ void Node::update(const Node& child)
 			{
 				bestMove = std::make_unique<std::queue<Move> >(*child.action);
 			}
-			std::cout << "New alpha: " << alpha << std::endl;
-			std::cout << "New best move: ";
+			std::cout << "New alpha: " << alpha << " (";
 			printMoves(*bestMove);
-			std::cout << std::endl;
+			std::cout << ")" << std::endl;
 		}
 	}
 	else
 	{
-		std::cout << "Node is minimizer" << std::endl;
-		std::cout << "Child value: " << child.getValue() << std::endl;
-		std::cout << "alpha: " << alpha << ", beta: " << beta << std::endl;
+		std::cout << "Minimizer (a=" << alpha << ",b=" << beta << ")"
+						<< " updating on " << child.getValue() << std::endl;
 		// The value of a minimizer node is the lowest
 		// value of any of its children. It stores this
 		// value as its beta.
@@ -134,10 +126,9 @@ void Node::update(const Node& child)
 			{
 				bestMove = std::make_unique<std::queue<Move> >(*child.action);
 			}
-			std::cout << "New beta: " << beta << std::endl;
-			std::cout << "New best move: ";
+			std::cout << "New beta: " << beta << " (";
 			printMoves(*bestMove);
-			std::cout << std::endl;
+			std::cout << ")" << std::endl;
 		}
 	}
 }

@@ -20,22 +20,22 @@ State nextAiMove(const State& currentState);
 
 void usage()
 {
-	cerr << "Usage: mancala [stones] [holes]" << endl;
-	cerr << "   where stones in range [2, 6] "
-			"and holes in range [stones-1, 2*(stones-1)]"
-		 << endl;
+	cerr << "Usage: mancala [stones] [holes] [depth]" << endl
+		 << "   where stones in range [2, 6] " << endl
+	     <<	"         and holes in range [stones-1, 2*(stones-1)]" << endl
+		 << "         and depth in range [1,5]" << endl;
 }
 
 int main(int argc, char** argv)
 {
-	// Check parameters
-
-	if (argc != 3)
+	// Check number of parameters
+	if (argc != 4)
 	{
 		usage();
 		return 1;
 	}
 
+	// Get number of stones
 	auto stones = -1;
 	stringstream{argv[1]} >> stones;
 	if (stones < 2 || stones > 6)
@@ -45,33 +45,30 @@ int main(int argc, char** argv)
 	}
 	globalState().numStones = stones;
 
+	// Get number of holes
 	auto holes = -1;
 	stringstream{argv[2]} >> holes;
-	if (holes < stones - 1 || holes > 2* (stones - 1))
+	if (holes < stones - 1 || holes > 2 * (stones - 1))
 	{
 		usage();
 		return 1;
 	}
 	globalState().numHoles = holes;
 
-	cout << "Holes: " << holes << endl;
-	cout << "Stones: " << stones << endl;
-
-	auto p1Holes = vector<uint8_t>{};
-	auto p2Holes = vector<uint8_t>{};
-	for (auto i = 0; i < globalState().numHoles; ++i)
+	// Get search depth
+	auto depth = -1;
+	stringstream{argv[3]} >> depth;
+	if (depth < 1 || depth > 5)
 	{
-		p1Holes.push_back(globalState().numStones);
-		p2Holes.push_back(globalState().numStones);
+		usage();
+		return 1;
 	}
+	globalState().searchDepth = depth;
 
 	// Create starting state
-	auto startState = State{p1Holes, p2Holes, 0, true};
+	auto startState = State{};
 
-	cout << startState << endl;
-	cout << endl;
-	startState.prettyPrint(cout);
-
+	// Main game loop
 	auto isHumanTurn = true;
 	while (!startState.isEndState())
 	{
@@ -88,6 +85,7 @@ int main(int argc, char** argv)
 		isHumanTurn = !isHumanTurn;
 	}
 
+	// Print who won
 	cout << endl;
 	cout << endl;
 	cout << "GAME OVER" << endl;
@@ -122,11 +120,7 @@ State nextAiMove(const State& currentState)
 	currentState.prettyPrint(cout);
 
 	auto fringe = stack<Node>{};
-	// Limiting the search depth to 1 seems to lead to optimal play.
-	// Because the AI assumes the human plays perfectly, allowing a deeper
-	// search causes it to dismiss options that could lead to victory
-	// when the human plays poorly.
-	fringe.emplace(Node{currentState, 1, true});
+	fringe.emplace(Node{currentState, globalState().searchDepth, true});
 
 	while (!fringe.empty())
 	{
@@ -148,6 +142,8 @@ State nextAiMove(const State& currentState)
 			}
 			else
 			{
+				// We're at the root now, so end the loop
+				// If you pop the root, you won't be able to retrieve its data
 				break;
 			}
 		}
@@ -159,9 +155,15 @@ State nextAiMove(const State& currentState)
 	printMoves(moves);
 	cout << endl;
 	applyMoves(newState, moves);
+
+	// Note that because newState indicates it's the other player's turn now,
+	// you have to tell it to maximize for the opposite player.
+	newState.nextTurn();
 	cout << "Heuristic rates this state as "
 			<< calculateHeuristic1(newState,
 					currentState.getIsP1Turn()) << endl;
+	newState.nextTurn();
+
 	return newState;
 }
 

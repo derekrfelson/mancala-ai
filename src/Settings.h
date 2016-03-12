@@ -17,6 +17,7 @@ public: /* Member functions */
 public: /* Data members */
 	int numStones;
 	int numHoles;
+	int searchDepth;
 };
 
 GlobalState& globalState();
