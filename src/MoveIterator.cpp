@@ -19,24 +19,6 @@ MoveIterator::MoveIterator(const State& state)
 {
 }
 
-bool MoveIterator::hasNext() const
-{
-	if (move.holeNumber < globalState().numHoles)
-	{
-		return true;
-	}
-	else if (move.holeNumber == globalState().numHoles)
-	{
-		// Last move is {numHoles, clockwise=true}
-		return !move.clockwise;
-	}
-	else
-	{
-		// Hole number exceeded actual number of holes
-		return false;
-	}
-}
-
 bool MoveIterator::isValid() const
 {
 	return move.holeNumber <= globalState().numHoles
@@ -55,6 +37,9 @@ void MoveIterator::next()
 		}
 		else
 		{
+			// The bonus move didn't have anything more to iterate over,
+			// so "next move" means we're done with the bonus move
+			// and we increment normally.
 			bonusMove = nullptr;
 		}
 	}
