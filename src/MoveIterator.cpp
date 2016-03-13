@@ -10,6 +10,7 @@
 #include "Settings.h"
 #include "State.h"
 #include <queue>
+#include <cassert>
 
 MoveIterator::MoveIterator(const State& state)
 : state{state},
@@ -47,9 +48,9 @@ void MoveIterator::next()
 	// If we're on a bonus move, defer to the bonus move iterator
 	if (bonusMove)
 	{
-		if (bonusMove->hasNext())
+		bonusMove->next();
+		if (bonusMove->isValid())
 		{
-			bonusMove->next();
 			return;
 		}
 		else
@@ -76,10 +77,20 @@ void MoveIterator::next()
 			move = NO_MORE_MOVES();
 		}
 	}
+}
 
-	if (isValid())
+std::queue<Move> MoveIterator::operator*()
+{
+	assert(isValid());
+
+	// Add the current move to what we're returning
+	auto ret = std::queue<Move>{};
+	ret.push(move);
+
+	// Even if we're not in the middle of iterating through a bonus move,
+	// still check to see if we should be, before returning anything.
+	if (!bonusMove)
 	{
-		// Try out the move and see if it leads to bonus moves
 		auto projectedState = state;
 		applyMove(projectedState, move);
 		if (projectedState.getIsP1Turn() == state.getIsP1Turn())
@@ -87,21 +98,21 @@ void MoveIterator::next()
 			bonusMove = std::make_unique<MoveIterator>(projectedState);
 		}
 	}
-}
 
-std::queue<Move> MoveIterator::operator*()
-{
-	auto ret = std::queue<Move>{};
-	ret.push(move);
+	// If we've either just started a bonus move, or are in the
+	// middle of iterating through one, we need to add those to what we return
 	if (bonusMove)
 	{
-		auto bms = bonusMove->operator *();
+		// We are already iterating through
+		assert(bonusMove->isValid());
+		auto bms = bonusMove->operator*();
 		while (!bms.empty())
 		{
 			ret.push(bms.front());
 			bms.pop();
 		}
 	}
+
 	return ret;
 }
 

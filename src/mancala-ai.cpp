@@ -6,6 +6,7 @@
 #include <vector>
 #include <queue>
 #include <stack>
+#include <cassert>
 #include "Settings.h"
 #include "State.h"
 #include "Move.h"
@@ -14,6 +15,7 @@
 #include "Node.h"
 using namespace std;
 
+void tests();
 void usage();
 State nextHumanMove(const State& currentState);
 State nextAiMove(const State& currentState);
@@ -28,6 +30,9 @@ void usage()
 
 int main(int argc, char** argv)
 {
+	// Run some sanity tests
+	tests();
+
 	// Check number of parameters
 	if (argc != 4)
 	{
@@ -76,11 +81,15 @@ int main(int argc, char** argv)
 		cout << endl;
 		if (isHumanTurn)
 		{
+			assert(startState.getIsP1Turn());
 			startState = nextHumanMove(startState);
+			assert(!startState.getIsP1Turn());
 		}
 		else
 		{
+			assert(!startState.getIsP1Turn());
 			startState = nextAiMove(startState);
+			assert(startState.getIsP1Turn());
 		}
 		isHumanTurn = !isHumanTurn;
 	}
@@ -107,6 +116,9 @@ int main(int argc, char** argv)
 
 State nextAiMove(const State& currentState)
 {
+	// For now, AI is only player 2
+	assert(!currentState.getIsP1Turn());
+
 	// Show the current state so the user knows what's going on
 	cout << "AI's turn" << endl;
 	if (currentState.getIsP1Turn())
@@ -239,4 +251,39 @@ State nextHumanMove(const State& currentState)
 	} while (bonusMove);
 
 	return returnState;
+}
+
+void tests()
+{
+	globalState().numHoles = 4;
+	globalState().numStones = 4;
+	globalState().searchDepth = 1;
+	auto p1Holes = vector<uint8_t>{0, 0, 6, 6};
+	auto p2Holes = vector<uint8_t>{4, 4, 5, 5};
+	auto startState = State{p1Holes, p2Holes, 2, false};
+	auto s1 = stringstream{};
+	s1 << startState;
+	assert(s1.str() == "2/0,0,6,6/4,4,5,5/0*");
+	auto m1 = Move{1, false};
+	s1 = stringstream{};
+	s1 << m1;
+	assert(s1.str() == "Move{1,ccw}");
+	auto m2 = Move{1, true};
+	s1 = stringstream{};
+	s1 << m2;
+	assert(s1.str() == "Move{1,cw}");
+
+	auto s1AfterM1 = startState;
+	applyMove(s1AfterM1, m1);
+	s1 = stringstream{};
+	s1 << s1AfterM1;
+	cout << "2/0,0,6,6/4,4,5,5/0* + Move{1,ccw} -> " << s1AfterM1 << endl;
+	assert(s1.str() == "2/0,0,6,6/0,5,6,6/1*");
+
+	auto s1AfterM2 = startState;
+	applyMove(s1AfterM2, m2);
+	s1 = stringstream{};
+	s1 << s1AfterM2;
+	cout << "2/0,0,6,6/4,4,5,5/0* + Move{1,cw} -> " << s1AfterM2 << endl;
+	assert(s1.str() == "*2/1,1,7,6/0,4,5,5/1");
 }
