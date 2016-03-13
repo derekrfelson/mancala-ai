@@ -75,7 +75,7 @@ int Node::getValue() const
 {
 	if (parent && ((depth == 0) || isTerminalState()))
 	{
-		return calculateHeuristic1(state, false);
+		return globalState().currentHeuristic(state);
 	}
 
 	if (maximizer)
@@ -178,7 +178,7 @@ std::ostream& Node::print(std::ostream& stream) const
 	{
 		stream << "null";
 	}
-	stream << ", value=" << calculateHeuristic1(state, false);
+	stream << ", value=" << globalState().currentHeuristic(state);
 	return stream << " }";
 }
 

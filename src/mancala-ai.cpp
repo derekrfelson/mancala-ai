@@ -33,6 +33,8 @@ void usage()
 
 int main(int argc, char** argv)
 {
+	initializeGlobals();
+
 	// Run some sanity tests
 	tests();
 
@@ -102,6 +104,7 @@ int main(int argc, char** argv)
 	}
 	else if (strncmp("ai-h2", argv[5], 5) == 0)
 	{
+		assert(false); // Not yet implemented
 		//globalState().p1Heuristic = [](const State& state)
 		//		{ return calculateHeuristic2(state, true); };
 		globalState().p1NextMoveFn = nextAiMove;
@@ -126,6 +129,7 @@ int main(int argc, char** argv)
 	}
 	else if (strncmp("ai-h2", argv[6], 5) == 0)
 	{
+		assert(false); // Not yet implemented
 		//globalState().p2Heuristic = [](const State& state)
 		//		{ return calculateHeuristic2(state, false); };
 		globalState().p2NextMoveFn = nextAiMove;
@@ -146,11 +150,13 @@ int main(int argc, char** argv)
 		cout << endl;
 		if (state.getIsP1Turn())
 		{
+			globalState().currentHeuristic = globalState().p1Heuristic;
 			state = globalState().p1NextMoveFn(state);
 			assert(!state.getIsP1Turn());
 		}
 		else
 		{
+			globalState().currentHeuristic = globalState().p2Heuristic;
 			state = globalState().p2NextMoveFn(state);
 			assert(state.getIsP1Turn());
 		}
@@ -178,8 +184,7 @@ int main(int argc, char** argv)
 
 State nextAiMove(const State& currentState)
 {
-	// For now, AI is only player 2
-	assert(!currentState.getIsP1Turn());
+	assert(globalState().currentHeuristic != nullptr);
 
 	// Show the current state so the user knows what's going on
 	cout << "AI's turn" << endl;
@@ -249,12 +254,8 @@ State nextAiMove(const State& currentState)
 
 	// Note that because newState indicates it's the other player's turn now,
 	// you have to tell it to maximize for the opposite player.
-	newState.nextTurn();
 	cout << "Heuristic rates this state as "
-			<< calculateHeuristic1(newState,
-					currentState.getIsP1Turn()) << endl;
-	newState.nextTurn();
-
+			<< globalState().currentHeuristic(newState) << endl;
 	return newState;
 }
 
@@ -334,16 +335,6 @@ State nextHumanMove(const State& currentState)
 
 void tests()
 {
-	globalState().numHoles = 4;
-	globalState().numStones = 4;
-	globalState().searchDepth = 1;
-	globalState().prune = true;
-	globalState().prunedNodes = 0;
-	globalState().p1Heuristic = nullptr;
-	globalState().p2Heuristic = nullptr;
-	globalState().p1NextMoveFn = nullptr;
-	globalState().p2NextMoveFn = nullptr;
-
 	auto p1Holes = vector<uint8_t>{0, 0, 6, 6};
 	auto p2Holes = vector<uint8_t>{4, 4, 5, 5};
 	auto startState = State{p1Holes, p2Holes, 2, false};
@@ -363,13 +354,11 @@ void tests()
 	applyMove(s1AfterM1, m1);
 	s1 = stringstream{};
 	s1 << s1AfterM1;
-	cout << "2/0,0,6,6/4,4,5,5/0* + Move{1,ccw} -> " << s1AfterM1 << endl;
 	assert(s1.str() == "2/0,0,6,6/0,5,6,6/1*");
 
 	auto s1AfterM2 = startState;
 	applyMove(s1AfterM2, m2);
 	s1 = stringstream{};
 	s1 << s1AfterM2;
-	cout << "2/0,0,6,6/4,4,5,5/0* + Move{1,cw} -> " << s1AfterM2 << endl;
 	assert(s1.str() == "*2/1,1,7,6/0,4,5,5/1");
 }

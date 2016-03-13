@@ -30,8 +30,10 @@ public: /* Data members */
 	HeuristicFn p2Heuristic;
 	NextMoveFn p1NextMoveFn;
 	NextMoveFn p2NextMoveFn;
+	HeuristicFn currentHeuristic;
 };
 
 GlobalState& globalState();
+void initializeGlobals();
 
 #endif /* SRC_SETTINGS_H_ */
