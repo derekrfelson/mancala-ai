@@ -9,6 +9,7 @@
 #include "State.h"
 #include "Move.h"
 #include "MoveIterator.h"
+#include "Settings.h"
 #include <ostream>
 #include <iostream>
 #include <cassert>
@@ -42,8 +43,20 @@ Node::Node(const State& state, uint8_t depth, bool maximizer)
 // We also stop expanding nodes when depth reaches 0 or when the game is over.
 bool Node::hasNextNode() const
 {
-	return (depth > 0) && (!isTerminalState())
-			&& (iter.isValid()) && (beta > alpha);
+	if (depth > 0 && !isTerminalState() && iter.isValid())
+	{
+		if (globalState().prune)
+		{
+			globalState().prunedNodes += 1;
+			return beta > alpha;
+		}
+		else
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void Node::expandNextNode(std::stack<Node>& fringe)

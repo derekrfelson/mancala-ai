@@ -22,10 +22,11 @@ State nextAiMove(const State& currentState);
 
 void usage()
 {
-	cerr << "Usage: mancala [stones] [holes] [depth]" << endl
+	cerr << "Usage: mancala [stones] [holes] [depth] [prune]" << endl
 		 << "   where stones in range [2, 6] " << endl
 	     <<	"         and holes in range [stones-1, 2*(stones-1)]" << endl
-		 << "         and depth in range [1,5]" << endl;
+		 << "         and depth in range [1,5]" << endl
+		 << "         and prune in [true, false]" << endl;
 }
 
 int main(int argc, char** argv)
@@ -34,7 +35,7 @@ int main(int argc, char** argv)
 	tests();
 
 	// Check number of parameters
-	if (argc != 4)
+	if (argc != 5)
 	{
 		usage();
 		return 1;
@@ -69,6 +70,21 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	globalState().searchDepth = depth;
+
+	// Get whether we should apply alpha-beta pruning
+	if (strncmp("true", argv[4], 4) == 0)
+	{
+		globalState().prune = true;
+	}
+	else if (strncmp("false", argv[4], 5) == 0)
+	{
+		globalState().prune = false;
+	}
+	else
+	{
+		usage();
+		return 1;
+	}
 
 	// Create starting state
 	auto startState = State{};
@@ -131,15 +147,23 @@ State nextAiMove(const State& currentState)
 	}
 	currentState.prettyPrint(cout);
 
+	// Initialize the fringe with the root node
 	auto fringe = stack<Node>{};
 	fringe.emplace(Node{currentState, globalState().searchDepth, true});
 
+	// Collect some data for analysis later
+	int numNodesExpanded = 1;
+	globalState().prunedNodes = 0;
+
+	// Search through the game tree to find the best move
 	while (!fringe.empty())
 	{
 		cout << "AI is evaluating move " << fringe.top() << endl;
 
 		if (fringe.top().hasNextNode())
 		{
+			numNodesExpanded += 1;
+
 			// Expand the next node, and make that the top of the stack
 			fringe.top().expandNextNode(fringe);
 			// Following ordinary stack rules, we can only ever operate on the
@@ -147,26 +171,35 @@ State nextAiMove(const State& currentState)
 		}
 		else
 		{
+			// This section applies to nodes that have no children, either
+			// because we've maxed out the depth of our search, or because
+			// we've already evaluated all the children.
 			if (fringe.size() > 1)
 			{
+				// Evaluate the node and update its parents
 				fringe.top().updateParent();
 				fringe.pop();
 			}
 			else
 			{
-				// We're at the root now, so end the loop
+				// We're at the root node now, so end the loop
 				// If you pop the root, you won't be able to retrieve its data
 				break;
 			}
 		}
 	}
 
+	// Apply the best move
 	auto newState = currentState;
 	auto moves = fringe.top().getBestMove();
+	applyMoves(newState, moves);
+
+	// Print the performance data we collected
 	cout << "AI chose moves: ";
 	printMoves(moves);
 	cout << endl;
-	applyMoves(newState, moves);
+	cout << "AI looked at " << numNodesExpanded << " nodes ("
+					<< globalState().prunedNodes << " pruned)" << endl;
 
 	// Note that because newState indicates it's the other player's turn now,
 	// you have to tell it to maximize for the opposite player.
@@ -258,6 +291,7 @@ void tests()
 	globalState().numHoles = 4;
 	globalState().numStones = 4;
 	globalState().searchDepth = 1;
+	globalState().prune = true;
 	auto p1Holes = vector<uint8_t>{0, 0, 6, 6};
 	auto p2Holes = vector<uint8_t>{4, 4, 5, 5};
 	auto startState = State{p1Holes, p2Holes, 2, false};

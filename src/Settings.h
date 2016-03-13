@@ -18,6 +18,8 @@ public: /* Data members */
 	int numStones;
 	int numHoles;
 	int searchDepth;
+	bool prune;
+	int prunedNodes;
 };
 
 GlobalState& globalState();
