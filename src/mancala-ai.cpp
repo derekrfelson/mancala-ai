@@ -22,11 +22,13 @@ State nextAiMove(const State& currentState);
 
 void usage()
 {
-	cerr << "Usage: mancala [stones] [holes] [depth] [prune]" << endl
+	cerr << "Usage: mancala [stones] [holes] [depth] [prune] [p1] [p2]" << endl
 		 << "   where stones in range [2, 6] " << endl
 	     <<	"         and holes in range [stones-1, 2*(stones-1)]" << endl
 		 << "         and depth in range [1,5]" << endl
-		 << "         and prune in [true, false]" << endl;
+		 << "         and prune in [true, false]" << endl
+		 << "         and p1 in [human, ai-h1, ai-h2]" << endl
+		 << "         and p2 in [human, ai-h1, ai-h2]" << endl;
 }
 
 int main(int argc, char** argv)
@@ -35,7 +37,7 @@ int main(int argc, char** argv)
 	tests();
 
 	// Check number of parameters
-	if (argc != 5)
+	if (argc != 7)
 	{
 		usage();
 		return 1;
@@ -86,39 +88,83 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
+	// Get P1 settings
+	if (strncmp("human", argv[5], 5) == 0)
+	{
+		globalState().p1Heuristic = nullptr;
+		globalState().p1NextMoveFn = nextHumanMove;
+	}
+	else if (strncmp("ai-h1", argv[5], 5) == 0)
+	{
+		globalState().p1Heuristic = [](const State& state)
+				{ return calculateHeuristic1(state, true); };
+		globalState().p1NextMoveFn = nextAiMove;
+	}
+	else if (strncmp("ai-h2", argv[5], 5) == 0)
+	{
+		//globalState().p1Heuristic = [](const State& state)
+		//		{ return calculateHeuristic2(state, true); };
+		globalState().p1NextMoveFn = nextAiMove;
+	}
+	else
+	{
+		usage();
+		return 1;
+	}
+
+	// Get p2 settings
+	if (strncmp("human", argv[6], 5) == 0)
+	{
+		globalState().p2Heuristic = nullptr;
+		globalState().p2NextMoveFn = nextHumanMove;
+	}
+	else if (strncmp("ai-h1", argv[6], 5) == 0)
+	{
+		globalState().p2Heuristic = [](const State& state)
+				{ return calculateHeuristic1(state, false); };
+		globalState().p2NextMoveFn = nextAiMove;
+	}
+	else if (strncmp("ai-h2", argv[6], 5) == 0)
+	{
+		//globalState().p2Heuristic = [](const State& state)
+		//		{ return calculateHeuristic2(state, false); };
+		globalState().p2NextMoveFn = nextAiMove;
+	}
+	else
+	{
+		usage();
+		return 1;
+	}
+
 	// Create starting state
-	auto startState = State{};
+	auto state = State{};
 
 	// Main game loop
-	auto isHumanTurn = true;
-	while (!startState.isEndState())
+	while (!state.isEndState())
 	{
 		cout << endl;
 		cout << endl;
-		if (isHumanTurn)
+		if (state.getIsP1Turn())
 		{
-			assert(startState.getIsP1Turn());
-			startState = nextHumanMove(startState);
-			assert(!startState.getIsP1Turn());
+			state = globalState().p1NextMoveFn(state);
+			assert(!state.getIsP1Turn());
 		}
 		else
 		{
-			assert(!startState.getIsP1Turn());
-			startState = nextAiMove(startState);
-			assert(startState.getIsP1Turn());
+			state = globalState().p2NextMoveFn(state);
+			assert(state.getIsP1Turn());
 		}
-		isHumanTurn = !isHumanTurn;
 	}
 
 	// Print who won
 	cout << endl;
 	cout << endl;
 	cout << "GAME OVER" << endl;
-	if (startState.p1Captures > startState.p2Captures)
+	if (state.p1Captures > state.p2Captures)
 	{
 		cout << "Player 1 wins" << endl;
 	}
-	else if (startState.p1Captures < startState.p2Captures)
+	else if (state.p1Captures < state.p2Captures)
 	{
 		cout << "Player 2 wins" << endl;
 	}
@@ -191,7 +237,7 @@ State nextAiMove(const State& currentState)
 
 	// Apply the best move
 	auto newState = currentState;
-	auto moves = fringe.top().getBestMove();
+	auto moves = fringe.top().getBestMove(); // Root node contains best move
 	applyMoves(newState, moves);
 
 	// Print the performance data we collected
@@ -292,6 +338,12 @@ void tests()
 	globalState().numStones = 4;
 	globalState().searchDepth = 1;
 	globalState().prune = true;
+	globalState().prunedNodes = 0;
+	globalState().p1Heuristic = nullptr;
+	globalState().p2Heuristic = nullptr;
+	globalState().p1NextMoveFn = nullptr;
+	globalState().p2NextMoveFn = nullptr;
+
 	auto p1Holes = vector<uint8_t>{0, 0, 6, 6};
 	auto p2Holes = vector<uint8_t>{4, 4, 5, 5};
 	auto startState = State{p1Holes, p2Holes, 2, false};
