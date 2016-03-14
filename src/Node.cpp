@@ -23,6 +23,7 @@ Node::Node(const State& state, Node* const parent,
   depth{depth},
   alpha{alpha},
   beta{beta},
+  value{maximizer ? -99999999 : 99999999},
   maximizer{maximizer},
   iter{state},
   bestMove{nullptr}
@@ -78,14 +79,7 @@ int Node::getValue() const
 		return globalState().currentHeuristic(state);
 	}
 
-	if (maximizer)
-	{
-		return alpha;
-	}
-	else
-	{
-		return beta;
-	}
+	return value;
 }
 
 void Node::updateParent()
@@ -96,18 +90,79 @@ void Node::updateParent()
 	}
 }
 
-void Node::update(const Node& child)
+// Call this when it looks like you have two equally good child nodes.
+// True means prefer the new child, false means keep the current best move.
+bool Node::tiebreaker(const Node& newChild) const
 {
+	// If we have no current best move, obviously prefer the new child
+	if (bestMove == nullptr)
+	{
+		return true;
+	}
+
+	// Calculate the value of the current best move, regardless of its depth.
+	// This means that if a deep search results in AI apathy, it will
+	// choose the immediately best move rather than shrugging, saying "deep
+	// analysis shows that if the opponent plays perfectly, it doesn't
+	// matter what I do", and going with the first move it thinks of,
+	// which often leads to a stalemate.
+	auto bestMoves = *bestMove;
+	auto projectedBestState = state;
+	while (!bestMoves.empty())
+	{
+		auto& holeVector = projectedBestState.getIsP1Turn()
+				? projectedBestState.p1Holes
+				: projectedBestState.p2Holes;
+		if (holeVector[bestMoves.front().holeNumber-1] == 0)
+		{
+			// Always prefer actual moves to no-ops
+			return true;
+		}
+		applyMove(projectedBestState, bestMoves.front());
+		bestMoves.pop();
+	}
+
+	auto diff = globalState().currentHeuristic(projectedBestState)
+			- globalState().currentHeuristic(newChild.state);
 	if (maximizer)
 	{
-		std::cout << "Maximizer (a=" << alpha << ",b=" << beta << ")"
-				<< " updating on " << child.getValue() << std::endl;
-		// the value of a maximizer node is the highest
-		// value of any of its children. It stores this
-		// value as its alpha.
-		if (child.getValue() > alpha)
+		// diff == 0 means keep old move, so return false (keep old)
+		// diff > 0 means old move is better for max, return false (keep old)
+		// diff < 0 means old move is worse for max, return true (keep new)
+		return diff < 0;
+	}
+	else
+	{
+		// diff == 0 means keep old move, so return false (keep old)
+		// diff > 0 means old move is better for max, return true (keep new)
+		// diff < 0 means old move is worse for max, return false (keep old)
+		return diff > 0;
+	}
+}
+
+void Node::update(const Node& child)
+{
+	if (value == child.getValue() && tiebreaker(child))
+	{
+		if (bestMove)
 		{
-			alpha = child.getValue();
+			*bestMove = *child.action;
+		}
+		else
+		{
+			bestMove = std::make_unique<std::queue<Move> >(*child.action);
+		}
+	}
+
+	if (maximizer)
+	{
+		//std::cout << "Maximizer (a=" << alpha
+		//		<< ", b=" << beta << ", v=" << value << ")"
+		//		<< " updating on " << child.getValue() << std::endl;
+
+		if (value < child.getValue())
+		{
+			value = child.getValue();
 			if (bestMove)
 			{
 				*bestMove = *child.action;
@@ -116,21 +171,30 @@ void Node::update(const Node& child)
 			{
 				bestMove = std::make_unique<std::queue<Move> >(*child.action);
 			}
-			std::cout << "New alpha: " << alpha << " (";
-			printMoves(*bestMove);
-			std::cout << ")" << std::endl;
+			//std::cout << "New value: " << value << " (";
+			//printMoves(*bestMove);
+			//std::cout << ")" << std::endl;
+		}
+
+		if (alpha < value)
+		{
+			alpha = value;
+
+			//std::cout << "New alpha: " << value << " (";
+			//printMoves(*bestMove);
+			//std::cout << ")" << std::endl;
 		}
 	}
 	else
 	{
-		std::cout << "Minimizer (a=" << alpha << ",b=" << beta << ")"
-						<< " updating on " << child.getValue() << std::endl;
-		// The value of a minimizer node is the lowest
-		// value of any of its children. It stores this
-		// value as its beta.
-		if (child.getValue() < beta)
+		//std::cout << "Minimizer (a=" << alpha
+		//		<< ", b=" << beta << ", v=" << value << ")"
+		//		<< " updating on " << child.getValue() << std::endl;
+
+		if (value > child.getValue()
+				|| (value == child.getValue() && tiebreaker(child)))
 		{
-			beta = child.getValue();
+			value = child.getValue();
 			if (bestMove)
 			{
 				*bestMove = *child.action;
@@ -139,9 +203,17 @@ void Node::update(const Node& child)
 			{
 				bestMove = std::make_unique<std::queue<Move> >(*child.action);
 			}
-			std::cout << "New beta: " << beta << " (";
-			printMoves(*bestMove);
-			std::cout << ")" << std::endl;
+			//std::cout << "New value: " << value << " (";
+			//printMoves(*bestMove);
+			//std::cout << ")" << std::endl;
+		}
+
+		if (beta > value)
+		{
+			beta = value;
+			//std::cout << "New beta: " << beta << " (";
+			//printMoves(*bestMove);
+			//std::cout << ")" << std::endl;
 		}
 	}
 }
@@ -153,10 +225,6 @@ bool Node::isTerminalState() const
 
 std::queue<Move> Node::getBestMove() const
 {
-	if (bestMove == nullptr)
-	{
-		std::cerr << "ASSERTION FAILED on state " << state << std::endl;
-	}
 	assert(bestMove != nullptr);
 	return *bestMove;
 }
@@ -183,6 +251,7 @@ std::ostream& Node::print(std::ostream& stream) const
 		stream << "null";
 	}
 	stream << ", value=" << globalState().currentHeuristic(state);
+	stream << ", alpha=" << alpha << ", beta=" << beta << " ";
 	return stream << " }";
 }
 

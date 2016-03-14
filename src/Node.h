@@ -37,6 +37,7 @@ private:
 	uint8_t depth;
 	int alpha;
 	int beta;
+	int value;
 	bool maximizer;
 	MoveIterator iter;
 	std::unique_ptr<std::queue<Move> > bestMove;
@@ -44,6 +45,7 @@ private: // Member functions
 	explicit Node(const State& state, Node* const parent,
 			std::unique_ptr<std::queue<Move> > action, uint8_t depth,
 			int alpha, int beta, bool maximizer);
+	bool tiebreaker(const Node& equalChild) const;
 	void update(const Node& child);
 	int getValue() const;
 	bool isTerminalState() const;
