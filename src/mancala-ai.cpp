@@ -241,12 +241,9 @@ State nextAiMove(const State& currentState)
 	// Apply the best move
 	auto newState = currentState;
 	auto moves = fringe.top().getBestMove(); // Root node contains best move
-	applyMoves(newState, moves);
+	applyAndPrintMoves(newState, moves);
 
 	// Print the performance data we collected
-	cout << "AI chose moves: ";
-	printMoves(moves);
-	cout << endl;
 	cout << "AI looked at " << numNodesExpanded << " nodes ("
 					<< globalState().prunedNodes << " pruned)" << endl;
 

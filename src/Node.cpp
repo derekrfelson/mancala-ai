@@ -153,6 +153,10 @@ bool Node::isTerminalState() const
 
 std::queue<Move> Node::getBestMove() const
 {
+	if (bestMove == nullptr)
+	{
+		std::cerr << "ASSERTION FAILED on state " << state << std::endl;
+	}
 	assert(bestMove != nullptr);
 	return *bestMove;
 }

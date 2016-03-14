@@ -10,6 +10,7 @@
 #include "HoleIterator.h"
 #include "Settings.h"
 #include <ostream>
+#include <iomanip>
 #include <iostream>
 #include <cassert>
 
@@ -101,6 +102,29 @@ void applyMove(State& state, const Move& move)
 				val = 0;
 			}
 		}
+	}
+}
+
+void applyAndPrintMoves(State& state, std::queue<Move> moves)
+{
+	while (!moves.empty())
+	{
+		applyMove(state, moves.front());
+		std::cout << moves.front();
+		if (moves.front().clockwise)
+		{
+			std::cout << "  -> ";
+		}
+		else
+		{
+			std::cout << " -> ";
+		}
+		if (!state.getIsP1Turn())
+		{
+			std::cout << " ";
+		}
+		std::cout << state << std::endl;
+		moves.pop();
 	}
 }
 
