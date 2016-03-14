@@ -276,16 +276,22 @@ int calculateHeuristic1(const State& state, bool p1IsMaximizer)
 		diff = static_cast<int>(state.p2Captures) - state.p1Captures;
 	}
 
+	diff = diff * 2;
+
 	// Place a high value on actually winning the game
 	if (state.isEndState())
 	{
 		if (diff > 0)
 		{
-			diff += 200;
+			diff += 400;
+		}
+		else if (diff == 0)
+		{
+			diff += 1;
 		}
 		else
 		{
-			diff -= 200;
+			diff -= 400;
 		}
 	}
 
