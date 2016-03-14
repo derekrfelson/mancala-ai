@@ -26,6 +26,7 @@ public: /* Data members */
 	int searchDepth;
 	bool prune;
 	int prunedNodes;
+	bool iterativeDeepening;
 	HeuristicFn p1Heuristic;
 	HeuristicFn p2Heuristic;
 	NextMoveFn p1NextMoveFn;

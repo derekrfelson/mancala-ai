@@ -30,4 +30,5 @@ void initializeGlobals()
 	globalState().p1NextMoveFn = nullptr;
 	globalState().p2NextMoveFn = nullptr;
 	globalState().currentHeuristic = nullptr;
+	globalState().iterativeDeepening = false;
 }

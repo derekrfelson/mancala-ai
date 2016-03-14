@@ -28,6 +28,7 @@ public:
 	void expandNextNode(std::stack<Node>& fringe);
 	bool hasNextNode() const;
 	void updateParent();
+	int getValue() const;
 	std::queue<Move> getBestMove() const;
 	std::ostream& print(std::ostream& stream) const;
 private:
@@ -47,7 +48,6 @@ private: // Member functions
 			int alpha, int beta, bool maximizer);
 	bool tiebreaker(const Node& equalChild) const;
 	void update(const Node& child);
-	int getValue() const;
 	bool isTerminalState() const;
 };
 

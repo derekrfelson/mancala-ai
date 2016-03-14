@@ -22,13 +22,14 @@ State nextAiMove(const State& currentState);
 
 void usage()
 {
-	cerr << "Usage: mancala [stones] [holes] [depth] [prune] [p1] [p2]" << endl
+	cerr << "Usage: mancala [stones] [holes] [depth] [prune] [p1] [p2] [enable-id]" << endl
 		 << "   where stones in range [2, 6] " << endl
 	     <<	"         and holes in range [stones-1, 2*(stones-1)]" << endl
 		 << "         and depth in range [1,5]" << endl
 		 << "         and prune in [true, false]" << endl
 		 << "         and p1 in [human, ai-h1, ai-h2]" << endl
-		 << "         and p2 in [human, ai-h1, ai-h2]" << endl;
+		 << "         and p2 in [human, ai-h1, ai-h2]" << endl
+		 << "         and enable-id in [true, false]" << endl;
 }
 
 int main(int argc, char** argv)
@@ -39,7 +40,7 @@ int main(int argc, char** argv)
 	tests();
 
 	// Check number of parameters
-	if (argc != 7)
+	if (argc != 8)
 	{
 		usage();
 		return 1;
@@ -138,6 +139,21 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
+	// Get whether we should apply iterative deepening
+	if (strncmp("true", argv[7], 4) == 0)
+	{
+		globalState().iterativeDeepening = true;
+	}
+	else if (strncmp("false", argv[7], 5) == 0)
+	{
+		globalState().iterativeDeepening = false;
+	}
+	else
+	{
+		usage();
+		return 1;
+	}
+
 	// Create starting state
 	auto state = State{};
 
@@ -196,52 +212,77 @@ State nextAiMove(const State& currentState)
 	}
 	currentState.prettyPrint(cout);
 
-	// Initialize the fringe with the root node
-	auto fringe = stack<Node>{};
-	fringe.emplace(Node{currentState, globalState().searchDepth, true});
-
 	// Collect some data for analysis later
 	int numNodesExpanded = 1;
 	globalState().prunedNodes = 0;
 
-	// Search through the game tree to find the best move
-	while (!fringe.empty())
+	// Initialize things for iterative deepening
+	auto fringe = stack<Node>{};
+	auto bestValue = -9999999999;
+	auto bestMove = queue<Move>{};
+	auto depth = !globalState().iterativeDeepening
+			? globalState().searchDepth : 1;
+
+	for (; depth <= globalState().searchDepth; ++depth)
 	{
-		//cout << "AI is evaluating move " << fringe.top() << endl;
+		// Initialize the fringe with the root node
+		fringe.emplace(Node{currentState, depth, true});
 
-		if (fringe.top().hasNextNode())
+		// Search through the game tree to find the best move
+		while (!fringe.empty())
 		{
-			numNodesExpanded += 1;
+			//cout << "AI is evaluating move " << fringe.top() << endl;
 
-			// Expand the next node, and make that the top of the stack
-			fringe.top().expandNextNode(fringe);
-			// Following ordinary stack rules, we can only ever operate on the
-			// top element, so go back to the start of the loop.
-		}
-		else
-		{
-			// This section applies to nodes that have no children, either
-			// because we've maxed out the depth of our search, or because
-			// we've already evaluated all the children.
-			if (fringe.size() > 1)
+			if (fringe.top().hasNextNode())
 			{
-				// Evaluate the node and update its parents
-				fringe.top().updateParent();
-				fringe.pop();
+				numNodesExpanded += 1;
+
+				// Expand the next node, and make that the top of the stack
+				fringe.top().expandNextNode(fringe);
+				// Following ordinary stack rules, we can only ever operate on the
+				// top element, so go back to the start of the loop.
 			}
 			else
 			{
-				// We're at the root node now, so end the loop
-				// If you pop the root, you won't be able to retrieve its data
-				break;
+				// This section applies to nodes that have no children, either
+				// because we've maxed out the depth of our search, or because
+				// we've already evaluated all the children.
+				if (fringe.size() > 1)
+				{
+					// Evaluate the node and update its parents
+					fringe.top().updateParent();
+					fringe.pop();
+				}
+				else
+				{
+					// We're at the root node now, so end the loop
+					// If you pop the root, you won't be able to retrieve its data
+					break;
+				}
 			}
 		}
+
+		cout << "depth=" << depth << ", bestValue=" << bestValue << "bestMove=";
+		printMoves(bestMove);
+		cout << endl;
+		cout << "depth=" << depth << ", currentValue=" << fringe.top().getValue() << "currentMove=";
+		printMoves(fringe.top().getBestMove());
+		cout << endl;
+
+		// Use iterative deepening for move order
+		if (fringe.top().getValue() != bestValue)
+		{
+			bestValue = fringe.top().getValue();
+			bestMove = fringe.top().getBestMove();
+		}
+
+		fringe.pop();
+		assert(fringe.empty());
 	}
 
 	// Apply the best move
 	auto newState = currentState;
-	auto moves = fringe.top().getBestMove(); // Root node contains best move
-	applyAndPrintMoves(newState, moves);
+	applyAndPrintMoves(newState, bestMove);
 
 	// Print the performance data we collected
 	cout << "AI looked at " << numNodesExpanded << " nodes ("
