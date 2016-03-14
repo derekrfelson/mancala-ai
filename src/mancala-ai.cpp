@@ -104,9 +104,8 @@ int main(int argc, char** argv)
 	}
 	else if (strncmp("ai-h2", argv[5], 5) == 0)
 	{
-		assert(false); // Not yet implemented
-		//globalState().p1Heuristic = [](const State& state)
-		//		{ return calculateHeuristic2(state, true); };
+		globalState().p1Heuristic = [](const State& state)
+				{ return calculateHeuristic2(state, true); };
 		globalState().p1NextMoveFn = nextAiMove;
 	}
 	else
@@ -129,9 +128,8 @@ int main(int argc, char** argv)
 	}
 	else if (strncmp("ai-h2", argv[6], 5) == 0)
 	{
-		assert(false); // Not yet implemented
-		//globalState().p2Heuristic = [](const State& state)
-		//		{ return calculateHeuristic2(state, false); };
+		globalState().p2Heuristic = [](const State& state)
+				{ return calculateHeuristic2(state, false); };
 		globalState().p2NextMoveFn = nextAiMove;
 	}
 	else
@@ -209,7 +207,7 @@ State nextAiMove(const State& currentState)
 	// Search through the game tree to find the best move
 	while (!fringe.empty())
 	{
-		cout << "AI is evaluating move " << fringe.top() << endl;
+		//cout << "AI is evaluating move " << fringe.top() << endl;
 
 		if (fringe.top().hasNextNode())
 		{

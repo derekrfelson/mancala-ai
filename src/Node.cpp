@@ -100,8 +100,8 @@ void Node::update(const Node& child)
 {
 	if (maximizer)
 	{
-		std::cout << "Maximizer (a=" << alpha << ",b=" << beta << ")"
-				<< " updating on " << child.getValue() << std::endl;
+		//std::cout << "Maximizer (a=" << alpha << ",b=" << beta << ")"
+		//		<< " updating on " << child.getValue() << std::endl;
 		// the value of a maximizer node is the highest
 		// value of any of its children. It stores this
 		// value as its alpha.
@@ -116,15 +116,15 @@ void Node::update(const Node& child)
 			{
 				bestMove = std::make_unique<std::queue<Move> >(*child.action);
 			}
-			std::cout << "New alpha: " << alpha << " (";
-			printMoves(*bestMove);
-			std::cout << ")" << std::endl;
+			//std::cout << "New alpha: " << alpha << " (";
+			//printMoves(*bestMove);
+			//std::cout << ")" << std::endl;
 		}
 	}
 	else
 	{
-		std::cout << "Minimizer (a=" << alpha << ",b=" << beta << ")"
-						<< " updating on " << child.getValue() << std::endl;
+		//std::cout << "Minimizer (a=" << alpha << ",b=" << beta << ")"
+		//				<< " updating on " << child.getValue() << std::endl;
 		// The value of a minimizer node is the lowest
 		// value of any of its children. It stores this
 		// value as its beta.
@@ -139,9 +139,9 @@ void Node::update(const Node& child)
 			{
 				bestMove = std::make_unique<std::queue<Move> >(*child.action);
 			}
-			std::cout << "New beta: " << beta << " (";
-			printMoves(*bestMove);
-			std::cout << ")" << std::endl;
+			//std::cout << "New beta: " << beta << " (";
+			//printMoves(*bestMove);
+			//std::cout << ")" << std::endl;
 		}
 	}
 }
@@ -193,12 +193,58 @@ std::ostream& operator<<(std::ostream& stream, const Node& node)
  */
 int calculateHeuristic1(const State& state, bool p1IsMaximizer)
 {
+	auto diff = 0;
 	if (p1IsMaximizer)
 	{
-		return state.p1Captures - state.p2Captures;
+		diff = static_cast<int>(state.p1Captures) - state.p2Captures;
 	}
 	else
 	{
-		return state.p2Captures - state.p1Captures;
+		diff = static_cast<int>(state.p2Captures) - state.p1Captures;
 	}
+
+	// Place a high value on actually winning the game
+	if (state.isEndState())
+	{
+		if (diff > 0)
+		{
+			diff += 9999;
+		}
+		else
+		{
+			diff -= 9999;
+		}
+	}
+
+	return diff;
+}
+
+int calculateHeuristic2(const State& state, bool p1IsMaximizer)
+{
+	auto h = 130*calculateHeuristic1(state, p1IsMaximizer);
+	auto maximizerStones = 0;
+	auto minimizerStones = 0;
+	for (auto val : state.p1Holes)
+	{
+		if (p1IsMaximizer)
+		{
+			maximizerStones += val;
+		}
+		else
+		{
+			minimizerStones += val;
+		}
+	}
+	for (auto val : state.p2Holes)
+	{
+		if (!p1IsMaximizer)
+		{
+			maximizerStones += val;
+		}
+		else
+		{
+			minimizerStones += val;
+		}
+	}
+	return h + maximizerStones - minimizerStones;
 }

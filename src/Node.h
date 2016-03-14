@@ -51,5 +51,6 @@ private: // Member functions
 
 std::ostream& operator<<(std::ostream& stream, const Node& node);
 int calculateHeuristic1(const State& state, bool p1IsMaximizer);
+int calculateHeuristic2(const State& state, bool p1IsMaximizer);
 
 #endif /* SRC_NODE_H_ */
