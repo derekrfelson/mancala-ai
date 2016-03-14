@@ -207,7 +207,7 @@ State nextAiMove(const State& currentState)
 	// Search through the game tree to find the best move
 	while (!fringe.empty())
 	{
-		//cout << "AI is evaluating move " << fringe.top() << endl;
+		cout << "AI is evaluating move " << fringe.top() << endl;
 
 		if (fringe.top().hasNextNode())
 		{

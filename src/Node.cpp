@@ -31,7 +31,7 @@ Node::Node(const State& state, Node* const parent,
 
 // For a root node
 Node::Node(const State& state, uint8_t depth, bool maximizer)
-: Node(state, nullptr, nullptr, depth, -99999, 99999, maximizer)
+: Node(state, nullptr, nullptr, depth, -99999999, 99999999, maximizer)
 {
 }
 
@@ -100,8 +100,8 @@ void Node::update(const Node& child)
 {
 	if (maximizer)
 	{
-		//std::cout << "Maximizer (a=" << alpha << ",b=" << beta << ")"
-		//		<< " updating on " << child.getValue() << std::endl;
+		std::cout << "Maximizer (a=" << alpha << ",b=" << beta << ")"
+				<< " updating on " << child.getValue() << std::endl;
 		// the value of a maximizer node is the highest
 		// value of any of its children. It stores this
 		// value as its alpha.
@@ -116,15 +116,15 @@ void Node::update(const Node& child)
 			{
 				bestMove = std::make_unique<std::queue<Move> >(*child.action);
 			}
-			//std::cout << "New alpha: " << alpha << " (";
-			//printMoves(*bestMove);
-			//std::cout << ")" << std::endl;
+			std::cout << "New alpha: " << alpha << " (";
+			printMoves(*bestMove);
+			std::cout << ")" << std::endl;
 		}
 	}
 	else
 	{
-		//std::cout << "Minimizer (a=" << alpha << ",b=" << beta << ")"
-		//				<< " updating on " << child.getValue() << std::endl;
+		std::cout << "Minimizer (a=" << alpha << ",b=" << beta << ")"
+						<< " updating on " << child.getValue() << std::endl;
 		// The value of a minimizer node is the lowest
 		// value of any of its children. It stores this
 		// value as its beta.
@@ -139,9 +139,9 @@ void Node::update(const Node& child)
 			{
 				bestMove = std::make_unique<std::queue<Move> >(*child.action);
 			}
-			//std::cout << "New beta: " << beta << " (";
-			//printMoves(*bestMove);
-			//std::cout << ")" << std::endl;
+			std::cout << "New beta: " << beta << " (";
+			printMoves(*bestMove);
+			std::cout << ")" << std::endl;
 		}
 	}
 }
@@ -212,11 +212,11 @@ int calculateHeuristic1(const State& state, bool p1IsMaximizer)
 	{
 		if (diff > 0)
 		{
-			diff += 9999;
+			diff += 200;
 		}
 		else
 		{
-			diff -= 9999;
+			diff -= 200;
 		}
 	}
 
